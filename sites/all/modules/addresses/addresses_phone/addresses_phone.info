@@ -1,0 +1,12 @@
+; $Id: addresses_phone.info,v 1.2 2008/10/17 05:06:42 alexiswilke Exp $
+core            = "6.x"
+description     = "Add phone and fax fields on addresses"
+dependencies[]  = addresses
+name            = "Addresses - Phone/Fax"
+
+; Information added by drupal.org packaging script on 2010-01-16
+version = "6.x-1.06"
+core = "6.x"
+project = "addresses"
+datestamp = "1263659406"
+

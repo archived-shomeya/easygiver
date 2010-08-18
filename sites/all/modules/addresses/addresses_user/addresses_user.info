@@ -1,0 +1,12 @@
+; $Id: addresses_user.info,v 1.1 2008/08/01 08:56:20 brmassa Exp $
+core            = "6.x"
+description     = "Let your users add addresses to their profiles"
+dependencies[]  = addresses
+name            = "Addresses - Users"
+
+; Information added by drupal.org packaging script on 2010-01-16
+version = "6.x-1.06"
+core = "6.x"
+project = "addresses"
+datestamp = "1263659406"
+

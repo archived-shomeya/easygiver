@@ -1,0 +1,56 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install function for eg_types module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function eg_network_schema() {
+  $schema = array();
+
+  $schema['eg_network'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'identifier' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'enabled' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => FALSE,
+      ),
+    ),
+  );
+
+
+  return $schema;
+}
+
+/**
+ * Implementaiton of hook_install().
+ */
+function eg_network_install() {
+  drupal_install_schema('eg_network');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function eg_network_uninstall() {
+  drupal_uninstall_schema('eg_network');
+}

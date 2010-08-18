@@ -1,0 +1,35 @@
+$Id: INSTALL.txt,v 1.5.2.1 2008/06/25 01:36:59 kbahey Exp $
+
+Requirements:
+-------------
+This module requires drupal 4.5.x or greater.
+
+Installation:
+-------------
+1. Copy the customerror.module to the Drupal modules/ directory.
+
+2. Go to Administer -> Modules
+   - Enable the customerror module, click on Save
+
+3. Configure the module:
+   - Go to Administer -> Custom error
+   - Enter any title and description you want for the 404 (not found)
+     and 403 (access denied) pages.
+   - You can use any HTML tags to format the text.
+
+4. Enable the customerror pages.
+   Go to Administer -> Error Reporting
+   - Set "Default 403 (access denied) page:" to "customerror/403" (without
+     the quotes).
+   - Set "Default 404 (not found) page:" to "customerror/404" (without
+     the quotes).
+   - Click Save
+
+5. Test your error pages.
+   - Copy your present admin page url.
+   - Try to go to a non-existent Drupal page on your site.
+   You should see your custom error page for 404 (not found) page.
+
+   - Log out from your site.
+   - Paste the admin page url and try to go there.
+   You should see your custom error page for 403 (access denied) page.

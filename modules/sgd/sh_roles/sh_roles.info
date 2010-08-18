@@ -1,0 +1,9 @@
+; $Id$
+name = Shomeya Roles
+description = Provide default roles and WYSIWYG settings.
+core = 6.x
+dependencies[] = wysiwyg
+dependencies[] = install_profile_api
+dependencies[] = better_formats
+dependencies[] = adminrole
+dependencies[] = image_resize_filter

@@ -1,0 +1,117 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *
+ */
+
+function sh_roles_install() {
+  install_include(array('user', 'filter'));
+
+  // Install roles
+  $master_rid = install_add_role('super administrator');
+  $admin_rid = install_add_role('site administrator');
+  $editor_rid = install_add_role('editor');
+  $author_rid = install_add_role('author');
+
+  // Set up adminrole module
+  variable_set('adminrole_adminrole', $master_rid);
+
+  // Install inport formats
+  $basic_format_id = install_add_format('Basic');
+  $editing_format_id = install_add_format('Editing');
+
+  // Let super use Full HTML
+  install_format_set_roles(array($master_rid), '2');
+  // Let authenticated use Basic filter
+  install_format_set_roles(array('2', $author_rid, $editor_rid, $admin_rid, $master_rid), $basic_format_id);
+  // Let editor, author, and admin use Editing filter
+  install_format_set_roles(array($author_rid, $editor_rid, $admin_rid, $master_rid), $editing_format_id);
+
+  // Setup filters for formats
+  // Editing filter
+  install_set_filter($editing_format_id, 'image_resize_filter', 0, '-10');
+  install_set_filter($editing_format_id, 'filter', 0, '-9');
+  install_set_filter($editing_format_id, 'filter', 2, '-8');
+  install_set_filter($editing_format_id, 'filter', 3, '-7');
+  // Basic filter
+  install_set_filter($basic_format_id, 'filter', 0, '-9');
+  install_set_filter($basic_format_id, 'filter', 2, '-8');
+  install_set_filter($basic_format_id, 'filter', 3, '-7');
+  // Full HTML filter
+  install_set_filter(2, 'image_resize_filter', 0, '-10');
+  install_set_filter(2, 'filter', 2, '-9');
+  install_set_filter(2, 'filter', 1, '-8');
+  install_set_filter(2, 'filter', 3, '-7');
+
+  // Set filter settings
+  // Editing filter
+  variable_set('image_resize_filter_image_locations_'. $editing_format_id, array('local' => 'local', 'remote' => 'remote'));
+  variable_set('image_resize_filter_link_'. $editing_format_id, 0);
+  variable_set('image_resize_filter_link_class_'. $editing_format_id, '');
+  variable_set('image_resize_filter_link_rel_'. $editing_format_id, '');
+  variable_set('filter_html_'. $editing_format_id, '1');
+  variable_set('allowed_html_'. $editing_format_id, '<a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd><span><div><img><sup><sub>');
+  variable_set('filter_html_help_'. $editing_format_id, 1);
+  variable_set('filter_html_nofollow_'. $editing_format_id, 0);
+  variable_set('filer_url_length_'. $editing_format_id, '72');
+  // basic filter
+  variable_set('image_resize_filter_image_locations_'. $basic_format_id, array('local' => 'local', 'remote' => 'remote'));
+  variable_set('image_resize_filter_link_'. $basic_format_id, 0);
+  variable_set('image_resize_filter_link_class_'. $basic_format_id, '');
+  variable_set('image_resize_filter_link_rel_'. $basic_format_id, '');
+  variable_set('filter_html_'. $basic_format_id, '1');
+  variable_set('allowed_html_'. $basic_format_id, '<a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd><span><div><sup><sub>');
+  variable_set('filter_html_help_'. $basic_format_id, 1);
+  variable_set('filter_html_nofollow_'. $basic_format_id, 0);
+  variable_set('filer_url_length_'. $basic_format_id, '72');
+  // Full HTML filter
+  variable_set('image_resize_filter_image_locations_'. 2, array('local' => 'local', 'remote' => 'remote'));
+  variable_set('image_resize_filter_link_'. 2, 0);
+  variable_set('image_resize_filter_link_class_'. 2, '');
+  variable_set('image_resize_filter_link_rel_'. 2, '');
+  variable_set('filer_url_length_'. 2, '72');
+
+  // wysiwyg editor settings
+  $full_html_editor_setting = 'a:21:{s:7:"default";i:1;s:11:"user_choose";i:0;s:11:"show_toggle";i:1;s:5:"theme";s:8:"advanced";s:8:"language";s:2:"en";s:7:"buttons";a:10:{s:7:"default";a:20:{s:4:"bold";i:1;s:6:"italic";i:1;s:9:"underline";i:1;s:13:"strikethrough";i:1;s:11:"justifyleft";i:1;s:13:"justifycenter";i:1;s:12:"justifyright";i:1;s:11:"justifyfull";i:1;s:7:"bullist";i:1;s:7:"numlist";i:1;s:7:"outdent";i:1;s:6:"indent";i:1;s:4:"link";i:1;s:6:"unlink";i:1;s:5:"image";i:1;s:9:"forecolor";i:1;s:3:"sup";i:1;s:3:"sub";i:1;s:10:"blockquote";i:1;s:2:"hr";i:1;}s:8:"advimage";a:1:{s:8:"advimage";i:1;}s:7:"advlink";a:1:{s:7:"advlink";i:1;}s:4:"font";a:1:{s:12:"formatselect";i:1;}s:12:"inlinepopups";a:1:{s:12:"inlinepopups";i:1;}s:5:"paste";a:1:{s:9:"pasteword";i:1;}s:5:"print";a:1:{s:5:"print";i:1;}s:5:"table";a:1:{s:13:"tablecontrols";i:1;}s:6:"safari";a:1:{s:6:"safari";i:1;}s:6:"drupal";a:1:{s:5:"break";i:1;}}s:11:"toolbar_loc";s:3:"top";s:13:"toolbar_align";s:4:"left";s:8:"path_loc";s:6:"bottom";s:8:"resizing";i:1;s:11:"verify_html";i:1;s:12:"preformatted";i:0;s:22:"convert_fonts_to_spans";i:1;s:17:"remove_linebreaks";i:1;s:23:"apply_source_formatting";i:0;s:27:"paste_auto_cleanup_on_paste";i:1;s:13:"block_formats";s:32:"p,address,pre,h2,h3,h4,h5,h6,div";s:11:"css_setting";s:4:"none";s:8:"css_path";s:0:"";s:11:"css_classes";s:0:"";s:13:"form_build_id";s:37:"form-ed9c8528135c168bfbc6b0eb126b0a6b";}';
+  $basic_editor_settings = 'a:21:{s:7:"default";i:1;s:11:"user_choose";i:0;s:11:"show_toggle";i:1;s:5:"theme";s:8:"advanced";s:8:"language";s:2:"en";s:7:"buttons";a:4:{s:7:"default";a:6:{s:4:"bold";i:1;s:6:"italic";i:1;s:9:"underline";i:1;s:7:"bullist";i:1;s:7:"numlist";i:1;s:4:"link";i:1;}s:4:"font";a:1:{s:12:"formatselect";i:1;}s:12:"inlinepopups";a:1:{s:12:"inlinepopups";i:1;}s:6:"safari";a:1:{s:6:"safari";i:1;}}s:11:"toolbar_loc";s:3:"top";s:13:"toolbar_align";s:4:"left";s:8:"path_loc";s:6:"bottom";s:8:"resizing";i:1;s:11:"verify_html";i:1;s:12:"preformatted";i:0;s:22:"convert_fonts_to_spans";i:1;s:17:"remove_linebreaks";i:1;s:23:"apply_source_formatting";i:0;s:27:"paste_auto_cleanup_on_paste";i:1;s:13:"block_formats";s:32:"p,address,pre,h2,h3,h4,h5,h6,div";s:11:"css_setting";s:4:"none";s:8:"css_path";s:0:"";s:11:"css_classes";s:0:"";s:13:"form_build_id";s:37:"form-3c6152333b8ee881c098e186e39eeeb2";}';
+  $editing_editor_settings = 'a:21:{s:7:"default";i:1;s:11:"user_choose";i:0;s:11:"show_toggle";i:1;s:5:"theme";s:8:"advanced";s:8:"language";s:2:"en";s:7:"buttons";a:8:{s:7:"default";a:16:{s:4:"bold";i:1;s:6:"italic";i:1;s:9:"underline";i:1;s:13:"strikethrough";i:1;s:11:"justifyleft";i:1;s:13:"justifycenter";i:1;s:12:"justifyright";i:1;s:7:"bullist";i:1;s:7:"numlist";i:1;s:7:"outdent";i:1;s:6:"indent";i:1;s:4:"link";i:1;s:5:"image";i:1;s:3:"sup";i:1;s:3:"sub";i:1;s:10:"blockquote";i:1;}s:8:"advimage";a:1:{s:8:"advimage";i:1;}s:7:"advlink";a:1:{s:7:"advlink";i:1;}s:4:"font";a:1:{s:12:"formatselect";i:1;}s:12:"inlinepopups";a:1:{s:12:"inlinepopups";i:1;}s:5:"paste";a:1:{s:9:"pasteword";i:1;}s:6:"safari";a:1:{s:6:"safari";i:1;}s:6:"drupal";a:1:{s:5:"break";i:1;}}s:11:"toolbar_loc";s:3:"top";s:13:"toolbar_align";s:4:"left";s:8:"path_loc";s:6:"bottom";s:8:"resizing";i:1;s:11:"verify_html";i:1;s:12:"preformatted";i:0;s:22:"convert_fonts_to_spans";i:1;s:17:"remove_linebreaks";i:1;s:23:"apply_source_formatting";i:0;s:27:"paste_auto_cleanup_on_paste";i:1;s:13:"block_formats";s:32:"p,address,pre,h2,h3,h4,h5,h6,div";s:11:"css_setting";s:4:"none";s:8:"css_path";s:0:"";s:11:"css_classes";s:0:"";s:13:"form_build_id";s:37:"form-44fd83a0550264d5e9cbb43adc41890b";}';
+
+  // Setup Full HTML editor for super user
+  db_query("INSERT INTO {wysiwyg} (format, editor, settings) VALUES (2, 'tinymce', '%s')", $full_html_editor_setting);
+  // Setup Basic editor for authenticated users
+  db_query("INSERT INTO {wysiwyg} (format, editor, settings) VALUES (%d, 'tinymce', '%s')", $basic_format_id, $basic_editor_settings);
+  // Setup the editing format editor
+  db_query("INSERT INTO {wysiwyg} (format, editor, settings) VALUES (%d, 'tinymce', '%s')", $editing_format_id, $editing_editor_settings);
+
+  // Setup better formats module
+  variable_set('better_formats_per_node_type', 1);
+
+  module_load_include('install', 'better_formats');
+  better_formats_uninstall();
+  better_formats_install();
+
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-25' WHERE rid = %d AND type = 'comment'", $basic_format_id, $master_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-24' WHERE rid = %d AND type = 'comment'", $basic_format_id, $admin_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-23' WHERE rid = %d AND type = 'comment'", $basic_format_id, $editor_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-22' WHERE rid = %d AND type = 'comment'", $basic_format_id, $author_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-21' WHERE rid = 2 AND type = 'comment'", $basic_format_id);
+  db_query("UPDATE {better_formats_defaults} SET weight = '-20' WHERE rid = 1 AND type = 'comment'");
+
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-25' WHERE rid = %d AND type = 'node'", $editing_format_id, $master_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-24' WHERE rid = %d AND type = 'node'", $editing_format_id, $admin_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-23' WHERE rid = %d AND type = 'node'", $editing_format_id, $editor_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-22' WHERE rid = %d AND type = 'node'", $editing_format_id, $author_rid);
+  db_query("UPDATE {better_formats_defaults} SET format = %d, weight = '-21' WHERE rid = 2 AND type = 'node'", $basic_format_id);
+  db_query("UPDATE {better_formats_defaults} SET weight = '-20' WHERE rid = 1 AND type = 'node'");
+
+  db_query("UPDATE {better_formats_defaults} SET format = 2 WHERE rid = %d AND type = 'block'", $master_rid);
+
+
+
+}
+
+function sh_roles_uninstall() {
+  
+}

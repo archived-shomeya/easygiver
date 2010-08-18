@@ -1,0 +1,249 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * This module provides basic functionality for the merchant, network and partner content types.
+ * @author Michael Prasuhn <mike@shomeya.com>
+ * @link http://www.shomeya.com/
+ * @package eg_networks
+ */
+
+/* -----------------------------------------------------------------
+  Hook Implementations
+------------------------------------------------------------------ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function eg_network_node_info() {
+  return array(
+    'network' => array(
+      'name' => t('Network'),
+      'module' => 'eg_network',
+      'description' => t("Network content type"),
+      'has_title' => TRUE,
+      'title_label' => t('Network name'),
+      'has_body' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function eg_network_perm() {
+  return array(
+    'create network content',
+    'delete own network content',
+    'delete any network content',
+    'edit own network content',
+    'edit any network content',
+    'view networks'
+  );
+}
+
+/**
+ * Implementation of hook_content_extra_fields.
+ */
+function eg_network_content_extra_fields($type_name) {
+  $extras = array();
+
+  if ($type_name == 'network') {
+    $extras['eg_network_data'] = array(
+      'label' => t('Network data'),
+      'description' => t('Network data fields.'),
+      'weight' => 0,
+    );
+  }
+
+  return $extras;
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function eg_network_access($op, $node, $account) {
+  if ($op == 'create') {
+    return user_access('create '. $node->type .' content', $account);
+  }
+
+  if ($op == 'update') {
+    if (user_access('edit any '. $node->type .' content', $account) || (user_access('edit own '. $node->type .' content', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'delete') {
+    if (user_access('delete any '. $node->type .' content', $account) || (user_access('delete own '. $node->type .' content', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+  if ($op == 'view') {
+    if (user_access('view networks')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function eg_network_form(&$node) {
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+    );
+  }
+
+  $form['eg_network'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Network data'),
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#weight' => module_exists('content') ? content_extra_field_weight($node->type, 'eg_network_data') : 0,
+  );
+
+    $form['eg_network']['enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enabled'),
+    '#default_value' => isset($node->eg_network['enabled']) ? $node->eg_network['enabled'] : TRUE,
+    '#description' => t('Disabling this network will prevent any merchant links associated with this network from being shown on the site.'),
+
+  );
+
+  $form['eg_network']['identifier'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Identifier'),
+    '#required' => TRUE,
+    '#default_value' => $node->eg_network['identifier'],
+    '#description' => t("The identifier for this network, such as subid, or mid. Do not include '&' or '=' symbols.")
+  );
+
+  if ($type->has_body) {
+    // In Drupal 6, we can use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function eg_network_insert($node) {
+  db_query("INSERT INTO {eg_network} (nid, identifier, enabled) VALUES (%d, '%s', %d)", $node->nid, $node->eg_network['identifier'], $node->eg_network['enabled']);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function eg_network_update($node) {
+  db_query("UPDATE {eg_network} set identifier = '%s', enabled = %d WHERE nid = %d", $node->eg_network['identifier'], $node->eg_network['enabled'], $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function eg_network_load($node) {
+  $result = db_fetch_array(db_query("SELECT identifier, enabled FROM {eg_network} WHERE nid = %d", $node->nid));
+  $node_data = new stdClass();
+  $node_data->eg_network = $result;
+  return $node_data;
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function eg_network_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function eg_network_delete($node) {
+  db_query('DELETE FROM {eg_network} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Helper function to return all merchants.
+ *
+ * This function is statically cached.
+ */
+function eg_network_get_all_networks() {
+  static $networks = array();
+
+  $result = db_query("SELECT nid, title FROM {node} WHERE status = 1 AND type = 'network'");
+  while ($row = db_fetch_object($result)) {
+    $networks[$row->nid] = check_plain($row->title);
+  }
+
+  return $networks;
+}
+
+function eg_network_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+
+//  dsm($node);
+
+  $node->content['eg_network_identifier'] = array(
+    '#value' => '<div><span class="field-label">'. t('Network Identifier') .': </span>'. filter_xss_admin($node->eg_network['identifier']) .'</div>',
+    '#weight' => 1,
+  );
+
+  $node->content['eg_network_status'] = array(
+    '#value' => '<div><span class="field-label">'. t('Network status') .': </span>'. filter_xss_admin($node->eg_network['enabled']) .'</div>',
+    '#weight' => 2,
+  );
+
+  $node->content['eg_network_merchants'] = array(
+    '#value' => '<h3>'. t('Affiliated merchants') .'</h3>'. views_embed_view('eg_network_merchants', 'default', $node->nid),
+    '#weight' => 5,
+  );
+
+  return $node;
+}
+
+/**
+ * Helper function to return all merchants.
+ *
+ * This function is statically cached.
+ */
+function eg_network_get_network_data() {
+  static $networks = array();
+
+  $result = db_query("SELECT n.nid as nid, n.title as title,  e.identifier as identifier FROM {node} n LEFT JOIN {eg_network} e on n.nid = e.nid WHERE n.status = 1 AND n.type = 'network'");
+  while ($row = db_fetch_object($result)) {
+    $networks[$row->nid] = array('name' => $row->title, 'id' => $row->identifier);
+  }
+
+  return $networks;
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function eg_network_views_api() {
+  return array(
+    'api' => '2.0',
+    'path' => drupal_get_path('module', 'eg_network') .'/includes',
+  );
+}

@@ -1,0 +1,12 @@
+; $Id: dbtng.info,v 1.1.2.1 2009/06/30 21:48:50 mikeyp Exp $
+name = DBTNG
+description = Drupal 7 database 
+core = 6.x
+dependencies[] = autoload
+php = 5.2
+; Information added by drupal.org packaging script on 2010-01-05
+version = "6.x-1.0-unstable3"
+core = "6.x"
+project = "dbtng"
+datestamp = "1262655903"
+

@@ -1,0 +1,266 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * This module provides basic functionality for the merchant, network and partner content types.
+ * @author Michael Prasuhn <mike@shomeya.com>
+ * @link http://www.shomeya.com/
+ * @package eg_partner
+ */
+
+/* -----------------------------------------------------------------
+  Hook Implementations
+------------------------------------------------------------------ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function eg_partner_node_info() {
+  return array(
+    'partner' => array(
+      'name' => t('Partner'),
+      'module' => 'eg_partner',
+      'description' => t("Partner content type"),
+      'has_title' => TRUE,
+      'title_label' => t('Partner name'),
+      'has_body' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function eg_partner_perm() {
+  return array(
+    'create partner content',
+    'delete own partner content',
+    'delete any partner content',
+    'edit own partner content',
+    'edit any partner content',
+    'view partners'
+  );
+}
+
+/**
+ * Implementation of hook_content_extra_fields.
+ */
+function eg_partner_content_extra_fields($type_name) {
+  $extras = array();
+
+  if ($type_name == 'partner') {
+    $extras['eg_partner_data'] = array(
+      'label' => t('Partner data'),
+      'description' => t('Partner data fields.'),
+      'weight' => 0,
+    );
+  }
+  return $extras;
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function eg_partner_access($op, $node, $account) {
+  if ($op == 'create') {
+    return user_access('create '. $node->type .' content', $account);
+  }
+  if ($op == 'update') {
+    if (user_access('edit any '. $node->type .' content', $account) || (user_access('edit own '. $node->type .' content', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+  if ($op == 'delete') {
+    if (user_access('delete any '. $node->type .' content', $account) || (user_access('delete own '. $node->type .' content', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+  if ($op == 'view') {
+    if (user_access('view partners')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function eg_partner_form(&$node) {
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+    );
+  }
+
+  if ($type->has_body) {
+    // In Drupal 6, we can use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+
+  $form['eg_partner'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#title' => t('Partner data'),
+    '#collapsible' => TRUE,
+    '#weight' => module_exists('content') ? content_extra_field_weight($node->type, 'eg_partner_data') : 0,
+  );
+
+  $form['eg_partner']['merchants'] = array(
+    '#type' => 'select',
+    '#title' => t('Select merchants'),
+    '#multiple' => TRUE,
+    '#options' => eg_merchant_get_all_merchants(TRUE),
+    '#default_value' => $node->eg_partner['merchants'],
+  );
+  
+  $form['eg_partner']['network_id'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#title' => t('Network IDs'),
+    '#collapsible' => FALSE,
+  );
+  foreach (eg_network_get_network_data() as $id => $data) {
+    $form['eg_partner']['network_id'][$id] = array(
+      '#type' => 'textfield',
+      '#default_value' => $node->eg_partner['network_id'][$id],
+      '#title' => check_plain($data['name']) .' - '. check_plain($data['id']),
+      '#description' => t('Enter the ID to be used as the @id for links using this network, with this partner.', array('@id' => $data['id'])),
+      
+    );
+  }
+
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function eg_partner_insert($node) {
+  $query = db_insert('eg_partner_merchants')
+    ->fields(array('nid', 'merchant_id'));
+  foreach ($node->eg_partner['merchants'] as $id => $merchant) {
+    $query->values(array('nid' => $node->nid, 'merchant_id' => $merchant));
+  }
+  $query->execute();
+
+  $query = db_insert('eg_partner_identifier')
+    ->fields(array('nid', 'network_id', 'id'));
+  foreach ($node->eg_partner['network_id'] as $id => $data) {
+    $query->values(array('nid' => $node->nid, 'network_id' => $id, 'id' => $data));
+  }
+  $query->execute();
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function eg_partner_update($node) {
+  db_delete('eg_partner_merchants')
+    ->condition('nid', $node->nid)
+    ->execute();
+  db_delete('eg_partner_identifier')
+    ->condition('nid', $node->nid)
+    ->execute();
+
+  eg_partner_insert($node);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function eg_partner_load($node) {
+  $result = db_select('eg_partner_merchants', 'e')
+    ->fields('e', array('merchant_id'))
+    ->condition('e.nid', $node->nid)
+    ->execute();
+
+  $node_data = new stdClass();
+  $node_data->eg_partner['merchants'] = drupal_map_assoc($result->fetchCol());
+
+  $result = db_select('eg_partner_identifier', 'e')
+    ->fields('e', array('network_id', 'id'))
+    ->condition('e.nid', $node->nid)
+    ->execute();
+
+  $network_data = array();
+  foreach ($result as $row) {
+    $network_data[$row->network_id] = $row->id;
+  }
+
+  $node_data->eg_partner['network_id'] = $network_data;
+  
+  return $node_data;
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function eg_partner_delete($node) {
+  db_delete('eg_partner_merchants')
+    ->condition('nid', $node->nid)
+    ->execute();
+  db_delete('eg_partner_identifier')
+    ->condition('nid', $node->nid)
+    ->execute();
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function eg_partner_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function eg_partner_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $node->content['eg_partner_merchants'] = array(
+    '#value' => views_embed_view('eg_partner_default', 'default', $node->nid),
+    '#weight' => 1,
+  );
+
+  return $node;
+}
+
+/**
+ * Helper funtion to get merchants for a given partner.
+ */
+function eg_partner_get_merchants($node) {
+  $result = db_select('eg_partner_merchants', 'e')
+    ->fields('e', array('merchant_id'))
+    ->condition('e.nid', $node->nid)
+    ->execute();
+
+  return drupal_map_assoc($result->fetchCol());
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function eg_partner_views_api() {
+  return array(
+    'api' => '2.0',
+    'path' => drupal_get_path('module', 'eg_partner') .'/includes',
+  );
+}

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/alliancenw/!svn/ver/47/trunk/local/modules/email
+END
+LICENSE.txt
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/alliancenw/!svn/ver/47/trunk/local/modules/email/LICENSE.txt
+END
+email.info
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/alliancenw/!svn/ver/47/trunk/local/modules/email/email.info
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/alliancenw/!svn/ver/47/trunk/local/modules/email/README.txt
+END
+email.module
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/alliancenw/!svn/ver/47/trunk/local/modules/email/email.module
+END
+email.install
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/alliancenw/!svn/ver/47/trunk/local/modules/email/email.install
+END

@@ -1,0 +1,7 @@
+; $Id$
+name = EasyGiver network content type
+description = This module provides basic functionality for the merchant, network and partner content types.
+core = 6.x
+dependencies[] = content
+dependencies[] = views
+dependencies[] = dbtng

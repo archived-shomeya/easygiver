@@ -1,0 +1,73 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install function for eg_partner module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function eg_partner_schema() {
+  $schema = array();
+  
+  $schema['eg_partner_merchants'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'merchant_id' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+    ),
+  );
+  $schema['eg_partner_identifier'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'network_id' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'id' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+    ),
+  );
+
+
+
+  return $schema;
+}
+
+/**
+ * Implementaiton of hook_install().
+ */
+function eg_partner_install() {
+  drupal_install_schema('eg_partner');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function eg_partner_uninstall() {
+  drupal_uninstall_schema('eg_partner');
+}

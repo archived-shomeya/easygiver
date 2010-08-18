@@ -1,0 +1,61 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install function for eg_merchant module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function eg_merchant_schema() {
+  $schema = array();
+
+  $schema['eg_merchant'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'link' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'network' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'enabled' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => FALSE,
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementaiton of hook_install().
+ */
+function eg_merchant_install() {
+  drupal_install_schema('eg_merchant');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function eg_merchant_uninstall() {
+  drupal_uninstall_schema('eg_merchant');
+}

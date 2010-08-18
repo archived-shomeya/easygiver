@@ -1,0 +1,40 @@
+/* 
+    Document   : custom.css
+    Created on : Feb 1, 2010, 8:08:36 AM
+    Author     : mdp
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.view-eg-partner-default .affiliate-block {
+  text-align: center;
+  padding-bottom: 2em;
+}
+
+.view-eg-partner-default .views-view-grid {
+  width: 100%;
+}
+
+.view-eg-partner-default .views-view-grid td {
+  width: 33%;
+  border: none;
+}
+
+
+/** partner info block **/
+
+#block-views-partner_info-block_1 .views-field-title  {
+  margin-bottom: 1em;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+#block-views-partner_info-block_1 .views-field-field-partner-phone-value,
+#block-views-partner_info-block_1 .views-field-field-partner-email-email {
+  margin-bottom: .5em;
+}
+
+#block-views-partner_info-block_1 .views-field-nothing {
+  margin-bottom: .5em;
+  font-weight: bold;
+}
